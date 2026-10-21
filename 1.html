@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Интерактивен тест по испански език (Ниво А1)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-100 min-h-screen flex flex-col items-center justify-center p-4 text-slate-800">
+
+    <div id="app" class="w-full max-w-lg bg-white shadow-2xl rounded-3xl p-6 md:p-8 border border-slate-200/80">
+        
+        <!-- Header -->
+        <div class="text-center mb-6">
+            <span class="inline-block bg-indigo-100 text-indigo-700 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider mb-2">Университетска подготовка</span>
+            <h1 class="text-2xl font-extrabold text-slate-900">🇪🇸 Тест по испански език (А1)</h1>
+            <p class="text-slate-500 text-sm mt-1">Преведи думите от твоите записки</p>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="w-full bg-slate-100 rounded-full h-3 mb-6 p-0.5 border border-slate-200">
+            <div id="progress-bar" class="bg-indigo-600 h-2 rounded-full transition-all duration-300 shadow-sm" style="width: 0%"></div>
+        </div>
+
+        <!-- Quiz Container -->
+        <div id="quiz-container">
+            <div class="flex justify-between items-center text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 px-1">
+                <span id="question-counter">Въпрос 1 от 68</span>
+                <span id="score-tracker" class="text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-md">Точки: 0</span>
+            </div>
+
+            <!-- Question Card -->
+            <div class="bg-gradient-to-br from-indigo-50 to-slate-50 border border-indigo-100 rounded-2xl p-6 text-center mb-6 shadow-inner">
+                <span class="text-xs font-bold text-indigo-500 uppercase tracking-widest">Какво означава на български?</span>
+                <h2 id="spanish-word" class="text-3xl font-black text-indigo-950 mt-2 tracking-wide">...</h2>
+            </div>
+
+            <!-- Options Grid -->
+            <div id="options-container" class="grid grid-cols-1 gap-3 mb-6">
+                <!-- Options will be injected here dynamically -->
+            </div>
+
+            <!-- Next Button -->
+            <button id="next-btn" onclick="nextQuestion()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 px-6 rounded-xl transition-all duration-200 shadow-lg shadow-indigo-200 active:scale-[0.99] hidden">
+                Следващ въпрос ➔
+            </button>
+        </div>
+
+        <!-- Results Screen -->
+        <div id="results-screen" class="hidden text-center py-6">
+            <div class="text-6xl mb-4 animate-bounce">🏆</div>
+            <h2 class="text-2xl font-black text-slate-900 mb-2">Тестът приключи!</h2>
+            <p id="final-score-text" class="text-lg text-slate-600 mb-6 font-medium">Ти събра 0 от 68 точки.</p>
+            <button onclick="restartQuiz()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 px-8 rounded-xl transition-all duration-200 shadow-lg shadow-indigo-200 active:scale-[0.99]">
+                Реши теста отново 🔄
+            </button>
+        </div>
+
+    </div>
+
+    <script>
+        const vocabulary = [
+            { es: "el alumno / la alumna", bg: "ученик / ученичка" },
+            { es: "el abogado / la abogada", bg: "адвокат / адвокатка" },
+            { es: "el profesor / la profesora", bg: "учител / учителка" },
+            { es: "el pintor / la pintora", bg: "художник / художничка" },
+            { es: "el cantante", bg: "певец / певица" },
+            { es: "el alemán / la alemana", bg: "германец / германка" },
+            { es: "el periodista / la periodista", bg: "журналист / журналистка" },
+            { es: "el ingeniero / la ingeniera", bg: "инженер" },
+            { es: "el estudiante / la estudiante", bg: "студент / студентка" },
+            { es: "el cirujano / la cirujana", bg: "хирург / хируржка" },
+            { es: "el guía / la guía", bg: "екскурзовод" },
+            { es: "el vendedor / la vendedora", bg: "продавач / продавачка" },
+            { es: "el francés / la francesa", bg: "французин / французойка" },
+            { es: "el estadounidense", bg: "американец / американка" },
+            { es: "el hijo / la hija", bg: "син / дъщеря" },
+            { es: "el gato / la gata", bg: "котка / котарак" },
+            { es: "el griego / la griega", bg: "грък / гъркиня" },
+            { es: "el brasileño / la brasileña", bg: "бразилец / бразилка" },
+            { es: "el canadiense", bg: "канадец / канадка" },
+            { es: "el camarero / la camarera", bg: "сервитьор / сервитьорка" },
+            { es: "el oso / la osa", bg: "мечок / мечка" },
+            { es: "el español / la española", bg: "испанец / испанка" },
+            { es: "el búlgaro / la búlgara", bg: "българин / българка" },
+            { es: "el joven", bg: "младеж" },
+            { es: "el chaval / la chavala", bg: "момче / момиче" },
+            { es: "el niño / la niña", bg: "дете / момченце / момиченце" },
+            { es: "el gallo", bg: "петел" },
+            { es: "la gallina", bg: "кокошка" },
+            { es: "la química", bg: "химия" },
+            { es: "la geografía", bg: "география" },
+            { es: "la página", bg: "страница" },
+            { es: "la conjugación", bg: "спрежение" },
+            { es: "la palabra", bg: "дума" },
+            { es: "la lluvia", bg: "дъжд" },
+            { es: "el girasol", bg: "слънчоглед" },
+            { es: "el gris", bg: "сив" },
+            { es: "el mono", bg: "маймуна" },
+            { es: "el jardín", bg: "градина" },
+            { es: "el zorro", bg: "лисица" },
+            { es: "la uva", bg: "грозде" },
+            { es: "el esquí", bg: "ски" },
+            { es: "la gente", bg: "хора" },
+            { es: "el gimnasio", bg: "фитнес / фитнес зала" },
+            { es: "el gentil", bg: "мил / любезен" },
+            { es: "la voz", bg: "глас" },
+            { es: "el quién", bg: "кой" },
+            { es: "el yerno", bg: "зет" },
+            { es: "la cigüeña", bg: "щъркел" },
+            { es: "la leche", bg: "мляко" },
+            { es: "la rosa", bg: "роза" },
+            { es: "el juego", bg: "игра" },
+            { es: "el elefante", bg: "слон" },
+            { es: "el alquiler", bg: "наем" },
+            { es: "el maquillaje", bg: "грим" },
+            { es: "el verbo", bg: "глагол" },
+            { es: "el gigante", bg: "великан" },
+            { es: "la imagen", bg: "изображение" },
+            { es: "el agua", bg: "вода" },
+            { es: "el hacha", bg: "брадва" },
+            { es: "el águila", bg: "орлица / орел" },
+            { es: "la casa", bg: "къща" },
+            { es: "el lápiz", bg: "молив" },
+            { es: "el día", bg: "ден" },
+            { es: "la noche", bg: "нощ" },
+            { es: "el pez", bg: "риба" },
+            { es: "la ciudad", bg: "град" },
+            { es: "el autobús", bg: "автобус" },
+            { es: "la mochila", bg: "раница" }
+        ];
+
+        let questions = [];
+        let currentIndex = 0;
+        let score = 0;
+        let answered = false;
+
+        function shuffleArray(array) {
+            const arr = [...array];
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        function initQuiz() {
+            const shuffledVocab = shuffleArray(vocabulary);
+            
+            questions = shuffledVocab.map(item => {
+                const otherItems = vocabulary.filter(v => v.bg !== item.bg);
+                const randomWrongOptions = shuffleArray(otherItems).slice(0, 3).map(v => v.bg);
+                const allOptions = shuffleArray([...randomWrongOptions, item.bg]);
+                
+                return {
+                    spanish: item.es,
+                    correct: item.bg,
+                    options: allOptions
+                };
+            });
+
+            currentIndex = 0;
+            score = 0;
+            
+            document.getElementById('results-screen').classList.add('hidden');
+            document.getElementById('quiz-container').classList.remove('hidden');
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            answered = false;
+            document.getElementById('next-btn').classList.add('hidden');
+            
+            const q = questions[currentIndex];
+            document.getElementById('question-counter').innerText = `Въпрос ${currentIndex + 1} от ${questions.length}`;
+            document.getElementById('score-tracker').innerText = `Точки: ${score}`;
+            document.getElementById('spanish-word').innerText = q.spanish;
+
+            const progressBar = document.getElementById('progress-bar');
+            progressBar.style.width = `${((currentIndex) / questions.length) * 100}%`;
+
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = '';
+
+            q.options.forEach(optionText => {
+                const btn = document.createElement('button');
+                btn.className = 'w-full text-left bg-white border-2 border-slate-200 hover:border-indigo-400 text-slate-700 font-semibold py-3.5 px-5 rounded-xl transition-all duration-150 shadow-sm hover:shadow active:scale-[0.99] cursor-pointer';
+                btn.innerText = optionText;
+                btn.onclick = () => selectOption(btn, optionText, q.correct);
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        function selectOption(button, selected, correct) {
+            if (answered) return;
+            answered = true;
+
+            const buttons = document.getElementById('options-container').children;
+            for (let b of buttons) {
+                b.disabled = true;
+                b.classList.remove('hover:border-indigo-400', 'cursor-pointer');
+                if (b.innerText === correct) {
+                    b.classList.remove('bg-white', 'border-slate-200', 'text-slate-700');
+                    b.classList.add('bg-emerald-500', 'border-emerald-500', 'text-white', 'shadow-emerald-200');
+                }
+            }
+
+            if (selected === correct) {
+                score++;
+                document.getElementById('score-tracker').innerText = `Точки: ${score}`;
+            } else {
+                button.classList.remove('bg-white', 'border-slate-200', 'text-slate-700');
+                button.classList.add('bg-rose-500', 'border-rose-500', 'text-white', 'shadow-rose-200');
+            }
+
+            document.getElementById('next-btn').classList.remove('hidden');
+        }
+
+        function nextQuestion() {
+            currentIndex++;
+            if (currentIndex < questions.length) {
+                loadQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function showResults() {
+            document.getElementById('quiz-container').classList.add('hidden');
+            document.getElementById('results-screen').classList.remove('hidden');
+            document.getElementById('final-score-text').innerText = `Ти събра ${score} от ${questions.length} точки!`;
+            document.getElementById('progress-bar').style.width = '100%';
+        }
+
+        function restartQuiz() {
+            initQuiz();
+        }
+
+        window.onload = initQuiz;
+    </script>
+</body>
+</html>
